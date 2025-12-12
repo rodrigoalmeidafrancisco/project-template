@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/1_Presentation/">
+    <Project Path="1_Presentation/WebApi/WebApi.csproj" />
+  </Folder>
+  <Folder Name="/2_Business/">
+    <Project Path="2_Business/Domain/Domain.csproj" />
+    <Project Path="2_Business/Shared/Shared.csproj" Id="2f24d7b8-df1b-4ff4-a5d0-c40efd6ab4f1" />
+  </Folder>
+  <Folder Name="/3_Infrastructure/">
+    <Project Path="3_Infrastructure/Data/Data.csproj" Id="0cea5959-6768-44d5-8eee-76ffb028683a" />
+  </Folder>
+  <Folder Name="/4_Others/">
+    <Project Path="4_Others/DataTools/DataTools.sqlproj" Id="a7b78a50-5a4c-46a9-a74c-a8956fb5003c">
+      <Build />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/5_UnitTests/">
+    <Project Path="5_UnitTests/TestProject/TestProject.csproj" Id="a1fdecd2-920f-4dd8-8936-de2dec1443c8" />
+  </Folder>
+</Solution>
