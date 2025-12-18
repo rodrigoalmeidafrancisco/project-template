@@ -5,14 +5,9 @@ using System.Linq.Expressions;
 
 namespace Data.Repositories._Base
 {
-    public class RepositoryBase<T> : IRepositoryBase<T> where T : class
+    public class RepositoryBase<T>(ContextDefault contextDefault) : IRepositoryBase<T> where T : class
     {
-        protected readonly ContextDefault _contextDefault;
-
-        public RepositoryBase(ContextDefault contextDefault)
-        {
-            _contextDefault = contextDefault ?? throw new ArgumentNullException(nameof(contextDefault));
-        }
+        protected readonly ContextDefault _contextDefault = contextDefault ?? throw new ArgumentNullException(nameof(contextDefault));
 
         /// <summary>
         /// Adiciona uma entidade ao contexto e salva as alterações

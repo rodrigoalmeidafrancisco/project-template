@@ -5,10 +5,7 @@ using Domain.Entities;
 
 namespace Data.Repositories
 {
-    public class RepositoryExemplo : RepositoryBase<Exemplo>, IRepositoryExemplo
+    public class RepositoryExemplo(ContextDefault contextDefault) : RepositoryBase<Exemplo>(contextDefault), IRepositoryExemplo
     {
-        public RepositoryExemplo(ContextDefault contextDefault) : base(contextDefault)
-        {
-        }
     }
 }
