@@ -6,4 +6,14 @@
     <!--<Nullable>enable</Nullable>-->
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="Dapper.Contrib" Version="2.0.78" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\2_Business\Domain\Domain.csproj" />
+    <ProjectReference Include="..\..\2_Business\Shared\Shared.csproj" />
+  </ItemGroup>
+
 </Project>

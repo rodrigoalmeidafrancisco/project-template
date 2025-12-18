@@ -1,4 +1,5 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi;
+using Shared.Settings;
 using System.Reflection;
 
 namespace WebApi.Configurations
@@ -11,7 +12,7 @@ namespace WebApi.Configurations
             {
                 builder.Services.AddSwaggerGen(x =>
                 {
-                    x.SwaggerDoc("v1", new OpenApiInfo { Version = "v1", Title = "Template", Description = "WebApi Documentation" });
+                    x.SwaggerDoc("v1", new OpenApiInfo { Version = "v1", Title = SettingApp.Aplication.Name, Description = "WebApi Documentation" });
 
                     x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                     {
@@ -21,20 +22,6 @@ namespace WebApi.Configurations
                         BearerFormat = "JWT",
                         In = ParameterLocation.Header,
                         Type = SecuritySchemeType.ApiKey
-                    });
-                    x.AddSecurityRequirement(new OpenApiSecurityRequirement
-                    {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>()
-                    }
                     });
 
                     // Configuração mais robusta para documentação XML
@@ -77,7 +64,7 @@ namespace WebApi.Configurations
                 app.UseSwaggerUI(x =>
                 {
                     //x.DefaultModelsExpandDepth(-1);
-                    x.SwaggerEndpoint("v1/swagger.json", "Template WebApi V1");
+                    x.SwaggerEndpoint("v1/swagger.json", $"{SettingApp.Aplication.Name} WebApi V1");
                 });
             }
         }

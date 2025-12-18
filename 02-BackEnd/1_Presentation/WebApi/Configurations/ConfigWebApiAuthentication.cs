@@ -18,7 +18,7 @@ namespace WebApi.Configurations
                 })
                 .AddJwtBearer(x =>
                 {
-                    x.Authority = $"Template_{SettingApp.Aplication._Environment}";
+                    x.Authority = $"{SettingApp.Aplication.Name} - {SettingApp.Aplication._Environment}";
                     x.RequireHttpsMetadata = false;
                     x.SaveToken = true;
                     x.TokenValidationParameters = new TokenValidationParameters
