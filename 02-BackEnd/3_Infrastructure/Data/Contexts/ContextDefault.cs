@@ -7,13 +7,8 @@ using System.Reflection;
 
 namespace Data.Contexts
 {
-    public class ContextDefault : DbContext
+    public class ContextDefault(DbContextOptions<ContextDefault> options) : DbContext(options)
     {
-        public ContextDefault(DbContextOptions<ContextDefault> options) : base(options)
-        {
-
-        }
-
         #region DbSet's
 
         //SCHEMA: dbo
