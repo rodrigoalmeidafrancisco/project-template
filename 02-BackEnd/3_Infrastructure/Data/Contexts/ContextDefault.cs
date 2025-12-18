@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
@@ -15,8 +16,8 @@ namespace Data.Contexts
 
         #region DbSet's
 
-        //SCHEMA: Aplicativo
-        //public DbSet<Exemplo> Exemplo { get; set; }
+        //SCHEMA: dbo
+        public DbSet<Exemplo> Exemplos { get; set; }
 
 
         #endregion DbSet's
