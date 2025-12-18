@@ -1,5 +1,6 @@
 ﻿using Domain.Commands._Base;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Settings;
 
 namespace WebApi.Controllers._Base
 {
@@ -10,12 +11,12 @@ namespace WebApi.Controllers._Base
 
         }
 
-        protected IActionResult RetornoBaseApi<T>(CommandResult<T> result)
+        protected IActionResult RetornoBaseApi<T>(CommandResult<T> result, string link201)
         {
             return result.StatusCod switch
             {
                 200 => Ok(result),
-                201 => Created("", result),
+                201 => Created($"{SettingApp.Aplication.WebUri}{link201}", result),
                 400 => BadRequest(result),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result),
             };
