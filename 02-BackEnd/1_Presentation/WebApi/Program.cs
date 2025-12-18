@@ -1,23 +1,38 @@
-var builder = WebApplication.CreateBuilder(args);
+using InversionOfControl;
+using Shared.Settings;
+using WebApi.Configurations;
 
-// Add services to the container.
+#region Configurações WebApplicationBuilder
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+//Obtendo as configurações da API "appsettings"
+SettingApp.Start(builder.Configuration, builder.Environment.WebRootPath);
+//Injetando as dependências
+Dependencies.Start(builder.Services);
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+//Configurações iniciais da API
+builder.ConfigInitialize();
+//Configurações do Swagger
+builder.AddConfigSwagger();
+//Configurações de Autenticação
+builder.AddAuthentication();
+//Configurações do Application Insights
+builder.AddConfigApplicationInsights();
 
-app.UseHttpsRedirection();
+#endregion Configurações WebApplicationBuilder
 
-app.UseAuthorization();
+#region Configurações WebApplication
 
-app.MapControllers();
+WebApplication app = builder.Build();
+//Configurações iniciais da API
+app.ConfigInitialize();
+//Configurações do Swagger
+app.AddConfigSwagger();
+//Configurações do Application Insights
+app.AddConfigApplicationInsights();
 
-app.Run();
+#endregion Configurações WebApplication
+
+//Iniciando a aplicação por padrão ASYNC
+await app.RunAsync();

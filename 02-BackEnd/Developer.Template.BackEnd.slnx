@@ -8,14 +8,10 @@
   </Folder>
   <Folder Name="/3_Infrastructure/">
     <Project Path="3_Infrastructure/Data/Data.csproj" Id="0cea5959-6768-44d5-8eee-76ffb028683a" />
+    <Project Path="3_Infrastructure/DataService/DataService.csproj" Id="b854ea2d-738d-4fad-be4c-515b6be978cf" />
+    <Project Path="3_Infrastructure/InversionOfControl/InversionOfControl.csproj" Id="a3e13cea-451f-4c41-a5b2-6bb9cb2e6ff6" />
   </Folder>
-  <Folder Name="/4_Others/">
-    <Project Path="4_Others/DataTools/DataTools.sqlproj" Id="a7b78a50-5a4c-46a9-a74c-a8956fb5003c">
-      <Build />
-      <Deploy />
-    </Project>
-  </Folder>
-  <Folder Name="/5_UnitTests/">
-    <Project Path="5_UnitTests/TestProject/TestProject.csproj" Id="a1fdecd2-920f-4dd8-8936-de2dec1443c8" />
+  <Folder Name="/4_UnitTests/">
+    <Project Path="4_UnitTests/TestProject/TestProject.csproj" />
   </Folder>
 </Solution>

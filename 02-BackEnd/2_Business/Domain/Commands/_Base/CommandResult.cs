@@ -22,34 +22,34 @@ namespace Domain.Commands._Base
         public string Message { get; set; } = null;
         public List<string> Errors { get; set; } = null;
 
-        public void Status200Ok(T dados, long? total = null)
+        public void ReturnStatus200(T dados, long? total = null)
         {
             StatusCod = 200;
             Data = dados;
             Total = total;
         }
 
-        public void Status201Created(Guid id)
+        public void ReturnStatus201(Guid id)
         {
             StatusCod = 201;
             Id = id;
         }
 
-        public void Status400BadRequest(string message, List<string> errors)
+        public void ReturnStatus400(string message, List<string> errors)
         {
             StatusCod = 400;
             Message = message;
             Errors = errors;
         }
 
-        public void Status400BadRequestFlunt(string message, IReadOnlyCollection<Notification> notificacoes)
+        public void ReturnStatus400Flunt(string message, IReadOnlyCollection<Notification> notificacoes)
         {
             StatusCod = 400;
             Message = message;
             Errors = notificacoes.SelectFluntNotifications();
         }
 
-        public void Status500InternalServerError(Guid erroId, string message)
+        public void ReturnStatus500(Guid erroId, string message)
         {
             StatusCod = 500;
             ErrorId = erroId;
