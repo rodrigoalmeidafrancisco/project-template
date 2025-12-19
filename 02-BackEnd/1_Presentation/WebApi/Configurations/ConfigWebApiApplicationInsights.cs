@@ -7,84 +7,112 @@ using Shared.Settings;
 
 namespace WebApi.Configurations
 {
+    /// <summary>
+    /// Classe estática responsável por configurar o Application Insights na aplicação WebApi
+    /// </summary>
     public static class ConfigWebApiApplicationInsights
     {
-        extension(WebApplicationBuilder builder)
+        /// <summary>
+        /// Extension method para configurar serviços do Application Insights no builder da aplicação
+        /// </summary>
+        /// <param name="builder">WebApplicationBuilder usado para configurar a aplicação</param>
+        public static void AddConfigApplicationInsights(this WebApplicationBuilder builder)
         {
-            public void AddConfigApplicationInsights()
+            // Adiciona o serviço de telemetria do Application Insights ao container de DI
+            builder.Services.AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions()
             {
-                //Configura a utilização do Application Insights
-                builder.Services.AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions()
-                {
-                    ConnectionString = SettingApp.ConnectionStrings.Default,
-                    // Desabilita coleta de dependências em desenvolvimento para reduzir ruído
-                    EnableAdaptiveSampling = !builder.Environment.IsDevelopment(),
-                    // Habilita coleta de heartbeat para monitoramento de disponibilidade
-                    EnableHeartbeat = true,
-                    // Habilita coleta detalhada de dependências (SQL, HTTP, etc)
-                    EnableDependencyTrackingTelemetryModule = true,
-                    // Habilita coleta de requisições HTTP
-                    EnableRequestTrackingTelemetryModule = true,
-                    // Habilita coleta de contadores de performance
-                    EnablePerformanceCounterCollectionModule = true,
-                    // Habilita coleta de eventos de aplicação
-                    EnableEventCounterCollectionModule = true,
-                });
+                // Define a connection string para envio de telemetria ao Azure Application Insights
+                ConnectionString = SettingApp.ConnectionStrings.Default,
 
-                // Enriquecimento de telemetria
-                builder.Services.AddSingleton<ITelemetryInitializer, TelemetryInitializer>();
-            }
+                // Desabilita amostragem adaptativa em desenvolvimento para capturar 100% dos eventos (facilita debug)
+                // Em produção, habilita para reduzir custos e volume de dados
+                EnableAdaptiveSampling = !builder.Environment.IsDevelopment(),
+
+                // Habilita envio periódico de heartbeat para monitorar disponibilidade da aplicação
+                EnableHeartbeat = true,
+
+                // Habilita rastreamento automático de chamadas a dependências externas (SQL Server, HTTP, Redis, etc)
+                EnableDependencyTrackingTelemetryModule = true,
+
+                // Habilita captura automática de todas as requisições HTTP recebidas pela API
+                EnableRequestTrackingTelemetryModule = true,
+
+                // Habilita coleta de contadores de performance do sistema (CPU, memória, threads, etc)
+                EnablePerformanceCounterCollectionModule = true,
+
+                // Habilita coleta de eventos de contadores customizados da aplicação
+                EnableEventCounterCollectionModule = true,
+            });
+
+            // Registra o inicializador de telemetria como singleton para enriquecer todos os eventos
+            builder.Services.AddSingleton<ITelemetryInitializer, TelemetryInitializer>();
         }
 
-        extension(WebApplication app)
+        /// <summary>
+        /// Extension method para configurar middlewares e eventos do Application Insights na aplicação iniciada
+        /// </summary>
+        /// <param name="app">WebApplication configurada e pronta para execução</param>
+        public static void AddConfigApplicationInsights(this WebApplication app)
         {
-            public void AddConfigApplicationInsights()
+            // Obtém instância do TelemetryClient do container de DI para enviar telemetria customizada
+            var telemetry = app.Services.GetRequiredService<TelemetryClient>();
+
+            // Registra callback para ser executado quando a aplicação iniciar com sucesso
+            app.Lifetime.ApplicationStarted.Register(() =>
             {
-                var telemetry = app.Services.GetRequiredService<TelemetryClient>();
-
-                //Marca início da aplicação
-                app.Lifetime.ApplicationStarted.Register(() =>
-                {
-                    telemetry.TrackTrace($"Log da aplicação '{SettingApp.Aplication.Name}' iniciada", SeverityLevel.Information);
-                });
-            }
+                // Envia trace informativo registrando o momento de inicialização da aplicação
+                telemetry.TrackTrace($"Log da aplicação '{SettingApp.Aplication.Name}' iniciada", SeverityLevel.Information);
+            });
         }
-
 
         #region Métodos Privados
 
-        // Inicializador para enriquecer toda telemetria com contexto global
+        /// <summary>
+        /// Inicializador customizado que enriquece automaticamente toda telemetria antes do envio ao Application Insights
+        /// Implementa ITelemetryInitializer para interceptar e modificar eventos de telemetria
+        /// </summary>
         private sealed class TelemetryInitializer : ITelemetryInitializer
         {
+            /// <summary>
+            /// Método chamado automaticamente para cada evento de telemetria antes do envio
+            /// </summary>
+            /// <param name="telemetry">Objeto de telemetria a ser enriquecido</param>
             public void Initialize(ITelemetry telemetry)
             {
+                // Valida se o objeto de telemetria e seu contexto são válidos antes de processar
                 if (telemetry?.Context == null) return;
 
-                // Define o nome da role (nome exibido no Application Map)
+                // Define o nome da role exibido no Application Map do Azure (identifica o serviço visualmente)
                 telemetry.Context.Cloud.RoleName = $"[{SettingApp.Aplication._Environment}] - {SettingApp.Aplication.Name} ({SettingApp.Aplication.Type})";
+
+                // Define a instância da role (identifica a máquina/container específico onde o serviço está rodando)
                 telemetry.Context.Cloud.RoleInstance = Environment.MachineName;
 
-                // Adiciona propriedades globais para todas as telemetrias
+                // Adiciona propriedade global de ambiente para filtros e queries no portal do Azure
                 telemetry.Context.GlobalProperties["Ambiente"] = SettingApp.Aplication._Environment;
-                telemetry.Context.GlobalProperties["Aplicacao"] = SettingApp.Aplication.Name;
+
+                // Adiciona propriedade global com nome da aplicação para identificação em queries
+                telemetry.Context.GlobalProperties["NomeAplicacao"] = SettingApp.Aplication.Name;
+
+                // Adiciona propriedade global com tipo da aplicação (WebApi, Worker, Console, etc)
                 telemetry.Context.GlobalProperties["TipoAplicacao"] = SettingApp.Aplication.Type;
 
-                // Adiciona versão do .NET
+                // Adiciona versão do runtime .NET para troubleshooting de compatibilidade
                 telemetry.Context.GlobalProperties["DotNetVersion"] = Environment.Version.ToString();
 
-                // Enriquece telemetria de requisições
+                // Enriquece especificamente telemetria de requisições HTTP (padrão switch pattern matching)
                 if (telemetry is RequestTelemetry requestTelemetry)
                 {
                     EnrichRequestTelemetry(requestTelemetry);
                 }
 
-                // Enriquece telemetria de dependências (SQL, HTTP, etc)
+                // Enriquece especificamente telemetria de chamadas a dependências externas
                 if (telemetry is DependencyTelemetry dependencyTelemetry)
                 {
                     EnrichDependencyTelemetry(dependencyTelemetry);
                 }
 
-                // Enriquece telemetria de exceções
+                // Enriquece especificamente telemetria de exceções/erros capturados
                 if (telemetry is ExceptionTelemetry exceptionTelemetry)
                 {
                     EnrichExceptionTelemetry(exceptionTelemetry);
@@ -93,60 +121,72 @@ namespace WebApi.Configurations
         }
 
         /// <summary>
-        /// Enriquece telemetria de requisições HTTP.
-        /// Permite customizar o comportamento de success/failure por status code.
+        /// Enriquece telemetria de requisições HTTP com informações customizadas
+        /// Permite categorizar e customizar o comportamento de success/failure
         /// </summary>
+        /// <param name="requestTelemetry">Objeto de telemetria da requisição HTTP</param>
         private static void EnrichRequestTelemetry(RequestTelemetry requestTelemetry)
         {
-            // Exemplo: Marcar requisições 400 como sucesso se for validação de negócio esperada
+            // Tenta fazer parse do código de resposta HTTP de string para inteiro
             if (int.TryParse(requestTelemetry.ResponseCode, out int statusCode))
             {
-                // Descomente se quiser que erros 400 (Bad Request) sejam considerados sucesso
-                // if (statusCode == 400)
-                // {
-                //     requestTelemetry.Success = true;
-                //     requestTelemetry.Properties["OverriddenSuccess"] = "true";
-                // }
-
-                // Adiciona categoria de status HTTP
+                // Adiciona categoria legível do status HTTP usando switch expression para facilitar análises
+                // Permite filtros no Azure como "StatusCategory = ClientError"
                 requestTelemetry.Properties["StatusCategory"] = statusCode switch
                 {
+                    // Status 2xx: Requisição processada com sucesso
                     >= 200 and < 300 => "Success",
+
+                    // Status 3xx: Redirecionamentos (MovedPermanently, Found, etc)
                     >= 300 and < 400 => "Redirect",
+
+                    // Status 4xx: Erros do cliente (BadRequest, NotFound, Unauthorized, etc)
                     >= 400 and < 500 => "ClientError",
+
+                    // Status 5xx: Erros do servidor (InternalServerError, ServiceUnavailable, etc)
                     >= 500 => "ServerError",
+
+                    // Códigos não mapeados ou inválidos
                     _ => "Unknown"
                 };
             }
         }
 
         /// <summary>
-        /// Enriquece telemetria de dependências externas (SQL, HTTP, Redis, etc).
+        /// Enriquece telemetria de dependências externas (bancos de dados, APIs HTTP, cache, etc)
         /// </summary>
+        /// <param name="dependencyTelemetry">Objeto de telemetria da dependência externa</param>
         private static void EnrichDependencyTelemetry(DependencyTelemetry dependencyTelemetry)
         {
-            // Adiciona informações úteis sobre dependências
+            // Identifica chamadas ao SQL Server e adiciona metadado adicional
+            // Útil para distinguir entre diferentes tipos de bancos de dados
             if (dependencyTelemetry.Type == "SQL")
             {
+                // Adiciona tipo específico do banco de dados para análises granulares
                 dependencyTelemetry.Properties["DatabaseType"] = "SqlServer";
             }
         }
 
         /// <summary>
-        /// Enriquece telemetria de exceções com informações adicionais de contexto.
+        /// Enriquece telemetria de exceções com informações adicionais de diagnóstico
         /// </summary>
+        /// <param name="exceptionTelemetry">Objeto de telemetria da exceção capturada</param>
         private static void EnrichExceptionTelemetry(ExceptionTelemetry exceptionTelemetry)
         {
-            // Adiciona severity level baseado no tipo de exceção
+            // Valida se a exceção existe antes de processar
             if (exceptionTelemetry.Exception != null)
             {
+                // Adiciona nome do tipo da exceção principal (ex: "ArgumentNullException", "InvalidOperationException")
                 exceptionTelemetry.Properties["ExceptionType"] = exceptionTelemetry.Exception?.GetType().Name ?? "Unknown";
+
+                // Adiciona nome do tipo da exceção interna (útil para diagnosticar causa raiz de erros encadeados)
                 exceptionTelemetry.Properties["InnerExceptionType"] = exceptionTelemetry.Exception.InnerException?.GetType().Name ?? "None";
+
+                // Define severity level como Error se ainda não estiver definido (null-coalescing assignment)
                 exceptionTelemetry.SeverityLevel ??= SeverityLevel.Error;
             }
         }
 
         #endregion Métodos Privados
-
     }
 }

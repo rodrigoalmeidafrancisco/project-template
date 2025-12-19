@@ -4,14 +4,22 @@
     <TargetFramework>net10.0</TargetFramework>
     <!--<Nullable>enable</Nullable>-->
     <ImplicitUsings>enable</ImplicitUsings>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);1591</NoWarn>
+    <!-- Desabilita o source generator automático de OpenAPI que causa conflito -->
+    <GenerateOpenApiDocumentation>false</GenerateOpenApiDocumentation>
+    <EmitCompilerGeneratedFiles>false</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <PropertyGroup>
+
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.4.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup>

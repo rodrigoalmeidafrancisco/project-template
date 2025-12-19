@@ -15,7 +15,7 @@ Dependencies.Start(builder.Services);
 builder.ConfigInitialize();
 //Configurações do Swagger
 builder.AddConfigSwagger();
-//Configurações de Autenticação
+//Configurações de Autenticação JWT
 builder.AddAuthentication();
 //Configurações do Application Insights
 builder.AddConfigApplicationInsights();

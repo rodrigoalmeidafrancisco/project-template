@@ -12,7 +12,22 @@ namespace WebApi.Configurations
             {
                 builder.Services.AddSwaggerGen(x =>
                 {
-                    x.SwaggerDoc("v1", new OpenApiInfo { Version = "v1", Title = SettingApp.Aplication.Name, Description = "WebApi Documentation" });
+                    x.SwaggerDoc("v1", new OpenApiInfo
+                    {
+                        Version = "v1",
+                        Title = SettingApp.Aplication.Name,
+                        Description = "WebApi Documentation",
+                        Contact = new OpenApiContact
+                        {
+                            Name = "Support Team",
+                            Email = "support@example.com"
+                        },
+                        License = new OpenApiLicense
+                        {
+                            Name = "MIT",
+                            Url = new Uri("https://opensource.org/licenses/MIT")
+                        }
+                    });
 
                     x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                     {
@@ -25,33 +40,20 @@ namespace WebApi.Configurations
                     });
 
                     // Configuração mais robusta para documentação XML
-                    try
-                    {
-                        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
-                        if (File.Exists(xmlPath))
-                        {
-                            x.IncludeXmlComments(xmlPath);
-                        }
-                        else
-                        {
-                            // Log que o arquivo XML não foi encontrado, mas não falha
-                            Console.WriteLine($"Arquivo de documentação XML não encontrado: {xmlPath}");
-                        }
-                    }
-                    catch (Exception ex)
+                    if (File.Exists(xmlPath))
                     {
-                        // Log do erro mas não quebra a aplicação
-                        Console.WriteLine($"Erro ao carregar documentação XML: {ex.Message}");
+                        x.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
                     }
 
-                    // Configurações adicionais para evitar problemas com enums e tipos complexos
                     x.UseInlineDefinitionsForEnums();
                     x.DescribeAllParametersInCamelCase();
-
-                    // Tratamento para métodos sem documentação explícita
                     x.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
+
+                    // Ordenar ações por método HTTP
+                    x.OrderActionsBy(apiDesc => $"{apiDesc.ActionDescriptor.RouteValues["controller"]}_{apiDesc.HttpMethod}");
                 });
             }
         }
@@ -63,8 +65,13 @@ namespace WebApi.Configurations
                 app.UseSwagger();
                 app.UseSwaggerUI(x =>
                 {
-                    //x.DefaultModelsExpandDepth(-1);
-                    x.SwaggerEndpoint("v1/swagger.json", $"{SettingApp.Aplication.Name} WebApi V1");
+                    x.SwaggerEndpoint("/swagger/v1/swagger.json", $"{SettingApp.Aplication.Name} WebApi V1");
+                    x.RoutePrefix = "swagger";
+                    x.DocumentTitle = $"{SettingApp.Aplication.Name} - API Documentation";
+                    x.DisplayRequestDuration();
+                    x.EnableDeepLinking();
+                    x.EnableFilter();
+                    x.EnableTryItOutByDefault();
                 });
             }
         }
