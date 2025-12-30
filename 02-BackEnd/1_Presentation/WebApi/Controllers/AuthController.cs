@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
+﻿using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Shared.Helpers;
@@ -7,8 +6,7 @@ using WebApi.Configurations.Filters;
 using WebApi.Controllers._Base;
 
 [ApiController]
-[Authorize("PolicyAutenticacaoTJSP")]
-[AuthorizeCustom(HelperPerfil.AllRoles)]
+[AuthorizeCustom("PolicyAutenticacaoTJSP", HelperPerfil.AllRoles)]
 [Produces("application/json")]
 [Route("auth")]
 [ApiExplorerSettings(IgnoreApi = false)]
@@ -30,7 +28,6 @@ public class AuthController : BaseApiController
     // Usa rate limiting padrão do usuário autenticado
     [HttpPost("refresh")]
     [EnableRateLimiting("authenticated-user")]
-    [Authorize]
     public IActionResult RefreshToken()
     {
         // Lógica de refresh token...
